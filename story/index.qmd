@@ -1,0 +1,1559 @@
+---
+title: "El SNII en Números"
+subtitle: "Una fotografía en el 2023"
+jupyter: python3
+format:
+  closeread-html:
+    css: style.css
+    cr-section:
+      layout: "overlay-center"
+---
+
+```{python}
+#| echo: false
+#| output: false
+
+import plotly.graph_objects as go
+import plotly.io as pio
+import pandas as pd
+
+pio.renderers.default = "notebook_connected"
+
+# ---------- leer datos ----------
+snii = pd.read_csv("../data/003_final/snii.csv", parse_dates=["AÑO"])
+snii["YEAR"] = snii["AÑO"].dt.year
+
+# ---------- paleta oscura ----------
+BG = "#0f172a"
+CARD = "rgba(30, 41, 59, 0.75)"
+TEXT = "#e2e8f0"
+MUTED = "#94a3b8"
+GRID = "rgba(148, 163, 184, 0.12)"
+FONT = "Inter, system-ui, sans-serif"
+TITLE_FONT = "Space Grotesk, system-ui, sans-serif"
+ACCENT = "#38bdf8"
+DIM = "#334155"
+SHOW = {"displayModeBar": False}
+
+COLM = "#a78bfa"   # mujeres (violeta)
+COLH = "#34d399"   # hombres (verde)
+
+# ---------- datos 2023 ----------
+snii_2023 = snii[snii["YEAR"] == 2023]
+total_2023 = len(snii_2023)
+h_2023 = int((snii_2023["SEXO"] == "H").sum())
+m_2023 = int((snii_2023["SEXO"] == "M").sum())
+pct_h_2023 = round(h_2023 / total_2023 * 100)
+pct_m_2023 = round(m_2023 / total_2023 * 100)
+
+total_2023_fmt = f"{total_2023:,}"
+h_2023_fmt = f"{h_2023:,}"
+m_2023_fmt = f"{m_2023:,}"
+```
+
+
+:::{.cr-section}
+En 2023, el Sistema Nacional de Investigadores cuenta con **`{python} total_2023_fmt`** personas investigadoras vigentes.  
+
+:::
+
+
+:::{.cr-section}
+
+De esas **`{python} total_2023_fmt`** personas investigadoras, [**`{python} m_2023_fmt`** son mujeres]{style="color:#a78bfa"} (**`{python} pct_m_2023`%**) y [**`{python} h_2023_fmt`** son hombres]{style="color:#34d399"} (**`{python} pct_h_2023`%**).  @cr-gender
+
+:::{#cr-gender}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["2023"], y=[h_2023],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{h_2023:,} ({pct_h_2023}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["2023"], y=[m_2023],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{m_2023:,} ({pct_m_2023}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    # title=dict(text=f"<b>Personas Investigadoras Vigentes: {total_2023_fmt}</b>",
+    #            font=dict(family=TITLE_FONT, size=22, color="#f8fafc"),
+    #            x=0.5, xanchor="center", y=0.97, yanchor="top"),
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+
+
+
+
+:::
+
+
+
+El SNII clasifica a sus integrantes en cuatro niveles: **Candidatura**, **Nivel 1**, **Nivel 2** y **Nivel 3**. Las personas investigadoras en Nivel 3 pueden además obtener la categoría de **Emeritazgo**, un reconocimiento a su trayectoria sobresaliente.
+
+```{python}
+#| echo: false
+#| output: false
+
+# ---------- datos por nivel y sexo (2023) ----------
+niveles = ["C", "1", "2", "3"]
+nivel_labels = {"C": "Candidatura", "1": "Nivel 1", "2": "Nivel 2", "3": "Nivel 3"}
+
+nivel_sexo = {}
+for niv in niveles:
+    sub = snii_2023[snii_2023["NIVEL"] == niv]
+    total_niv = len(sub)
+    m_niv = int((sub["SEXO"] == "M").sum())
+    h_niv = int((sub["SEXO"] == "H").sum())
+    pct_m_niv = round(m_niv / total_niv * 100) if total_niv > 0 else 0
+    pct_h_niv = round(h_niv / total_niv * 100) if total_niv > 0 else 0
+    nivel_sexo[niv] = {
+        "total": total_niv, "m": m_niv, "h": h_niv,
+        "pct_m": pct_m_niv, "pct_h": pct_h_niv,
+    }
+
+# ---------- datos eméritos (2023) ----------
+emeritos = snii_2023[snii_2023["EMERITO"] == True]
+total_em = len(emeritos)
+m_em = int((emeritos["SEXO"] == "M").sum())
+h_em = int((emeritos["SEXO"] == "H").sum())
+pct_m_em = round(m_em / total_em * 100) if total_em > 0 else 0
+pct_h_em = round(h_em / total_em * 100) if total_em > 0 else 0
+
+total_em_fmt = f"{total_em:,}"
+m_em_fmt = f"{m_em:,}"
+h_em_fmt = f"{h_em:,}"
+```
+
+
+:::{.cr-section}
+
+¿Cómo se distribuyen [mujeres]{style="color:#a78bfa"} y [hombres]{style="color:#34d399"} en cada nivel?
+
+En **Candidatura**, [**`{python} nivel_sexo["C"]["pct_m"]`%** son mujeres]{style="color:#a78bfa"} y [**`{python} nivel_sexo["C"]["pct_h"]`%** son hombres]{style="color:#34d399"}. @cr-nivel-c
+
+En **Nivel 1**, [**`{python} nivel_sexo["1"]["pct_m"]`%** son mujeres]{style="color:#a78bfa"} y [**`{python} nivel_sexo["1"]["pct_h"]`%** son hombres]{style="color:#34d399"}. @cr-nivel-1
+
+En **Nivel 2**, [**`{python} nivel_sexo["2"]["pct_m"]`%** son mujeres]{style="color:#a78bfa"} y [**`{python} nivel_sexo["2"]["pct_h"]`%** son hombres]{style="color:#34d399"}. @cr-nivel-2
+
+En **Nivel 3**, [**`{python} nivel_sexo["3"]["pct_m"]`%** son mujeres]{style="color:#a78bfa"} y [**`{python} nivel_sexo["3"]["pct_h"]`%** son hombres]{style="color:#34d399"}. @cr-nivel-3
+
+Y de las **`{python} total_em_fmt`** personas con **Emeritazgo**, [**`{python} m_em_fmt`** son mujeres]{style="color:#a78bfa"} (**`{python} pct_m_em`%**) y [**`{python} h_em_fmt`** son hombres]{style="color:#34d399"} (**`{python} pct_h_em`%**). @cr-emeritos
+
+:::{#cr-nivel-c}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Candidatura"], y=[nivel_sexo["C"]["h"]],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{nivel_sexo['C']['h']:,} ({nivel_sexo['C']['pct_h']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Candidatura"], y=[nivel_sexo["C"]["m"]],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{nivel_sexo['C']['m']:,} ({nivel_sexo['C']['pct_m']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::{#cr-nivel-1}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Nivel 1"], y=[nivel_sexo["1"]["h"]],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{nivel_sexo['1']['h']:,} ({nivel_sexo['1']['pct_h']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Nivel 1"], y=[nivel_sexo["1"]["m"]],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{nivel_sexo['1']['m']:,} ({nivel_sexo['1']['pct_m']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::{#cr-nivel-2}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Nivel 2"], y=[nivel_sexo["2"]["h"]],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{nivel_sexo['2']['h']:,} ({nivel_sexo['2']['pct_h']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Nivel 2"], y=[nivel_sexo["2"]["m"]],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{nivel_sexo['2']['m']:,} ({nivel_sexo['2']['pct_m']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::{#cr-nivel-3}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Nivel 3"], y=[nivel_sexo["3"]["h"]],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{nivel_sexo['3']['h']:,} ({nivel_sexo['3']['pct_h']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Nivel 3"], y=[nivel_sexo["3"]["m"]],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{nivel_sexo['3']['m']:,} ({nivel_sexo['3']['pct_m']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::{#cr-emeritos}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Emeritazgo"], y=[h_em],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{h_em:,} ({pct_h_em}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Emeritazgo"], y=[m_em],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{m_em:,} ({pct_m_em}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::
+
+
+:::{.cr-section}
+
+Conforme los niveles suben, la proporción de [mujeres]{style="color:#a78bfa"} disminuye. En Candidatura la brecha es menor, pero en los niveles más altos y en el Emeritazgo, los [hombres]{style="color:#34d399"} dominan ampliamente. @cr-resumen-niveles
+
+:::{#cr-resumen-niveles}
+```{python}
+#| echo: false
+categorias = ["Emeritazgo", "Nivel 3", "Nivel 2", "Nivel 1", "Candidatura"]
+pcts_m = [pct_m_em, nivel_sexo["3"]["pct_m"], nivel_sexo["2"]["pct_m"],
+          nivel_sexo["1"]["pct_m"], nivel_sexo["C"]["pct_m"]]
+pcts_h = [pct_h_em, nivel_sexo["3"]["pct_h"], nivel_sexo["2"]["pct_h"],
+          nivel_sexo["1"]["pct_h"], nivel_sexo["C"]["pct_h"]]
+nums_m = [m_em, nivel_sexo["3"]["m"], nivel_sexo["2"]["m"],
+          nivel_sexo["1"]["m"], nivel_sexo["C"]["m"]]
+nums_h = [h_em, nivel_sexo["3"]["h"], nivel_sexo["2"]["h"],
+          nivel_sexo["1"]["h"], nivel_sexo["C"]["h"]]
+
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Mujeres", y=categorias, x=pcts_m,
+    orientation="h", marker_color=COLM,
+    text=[f"<b>{n:,}</b> ({p}%)" for n, p in zip(nums_m, pcts_m)],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=14, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Hombres", y=categorias, x=pcts_h,
+    orientation="h", marker_color=COLH,
+    text=[f"<b>{n:,}</b> ({p}%)" for n, p in zip(nums_h, pcts_h)],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=14, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=100, r=20, t=20, b=50),
+    width=500, height=350, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="%",
+               range=[0, 100], dtick=25,
+               tickfont=dict(family=FONT, size=13, color=MUTED),
+               title_font=dict(family=FONT, size=14, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+
+Esta fue la fotografía a nivel nacional.
+
+
+:::
+
+
+
+
+```{python}
+#| echo: false
+#| output: false
+
+# ---------- datos por estado y sexo (2023) ----------
+estado_sexo = (
+    snii_2023[~snii_2023["ESTADO"].str.contains("SIN ENTIDAD", na=False)]
+    .groupby(["ESTADO", "SEXO"])
+    .size()
+    .unstack(fill_value=0)
+)
+estado_sexo["total"] = estado_sexo.sum(axis=1)
+estado_sexo["pct_m"] = (estado_sexo["M"] / estado_sexo["total"] * 100).round().astype(int)
+estado_sexo["pct_h"] = (estado_sexo["H"] / estado_sexo["total"] * 100).round().astype(int)
+abrev = {
+    "AGUASCALIENTES": "AGS", "BAJA CALIFORNIA": "BC", "BAJA CALIFORNIA SUR": "BCS",
+    "CAMPECHE": "CAMP", "CHIAPAS": "CHIS", "CHIHUAHUA": "CHIH",
+    "CIUDAD DE MÉXICO": "CDMX", "COAHUILA": "COAH",
+    "COAHUILA DE ZARAGOZA": "COAH", "COLIMA": "COL",
+    "DURANGO": "DGO", "GUANAJUATO": "GTO", "GUERRERO": "GRO",
+    "HIDALGO": "HGO", "JALISCO": "JAL", "MÉXICO": "EDOMEX",
+    "ESTADO DE MÉXICO": "EDOMEX", "MICHOACÁN": "MICH",
+    "MICHOACÁN DE OCAMPO": "MICH", "MORELOS": "MOR",
+    "NAYARIT": "NAY", "NUEVO LEÓN": "NL", "OAXACA": "OAX",
+    "PUEBLA": "PUE", "QUERÉTARO": "QRO", "QUINTANA ROO": "QROO",
+    "SAN LUIS POTOSÍ": "SLP", "SINALOA": "SIN", "SONORA": "SON",
+    "TABASCO": "TAB", "TAMAULIPAS": "TAMPS", "TLAXCALA": "TLAX",
+    "VERACRUZ": "VER", "VERACRUZ DE IGNACIO DE LA LLAVE": "VER",
+    "YUCATÁN": "YUC", "ZACATECAS": "ZAC",
+    "DISTRITO FEDERAL": "CDMX",
+}
+
+# ordenado por porcentaje de mujeres
+por_pct = estado_sexo.sort_values("pct_m", ascending=True)
+estados_pct = [abrev.get(e, e) for e in por_pct.index]
+est_m_pct = por_pct["M"].tolist()
+est_h_pct = por_pct["H"].tolist()
+est_pctm_pct = por_pct["pct_m"].tolist()
+est_pcth_pct = por_pct["pct_h"].tolist()
+
+# ordenado por número de mujeres
+por_num = estado_sexo.sort_values("M", ascending=True)
+estados_num = [abrev.get(e, e) for e in por_num.index]
+est_m_num = por_num["M"].tolist()
+est_h_num = por_num["H"].tolist()
+est_pctm_num = por_num["pct_m"].tolist()
+est_pcth_num = por_num["pct_h"].tolist()
+```
+
+
+
+¿Cómo se ve la brecha de género por entidad federativa? Ordenamos los estados del mayor al menor porcentaje de [mujeres]{style="color:#a78bfa"}.
+
+
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Mujeres", y=estados_pct, x=est_pctm_pct,
+    orientation="h", marker_color=COLM,
+    text=[f"{p}% ({n:,})" for n, p in zip(est_m_pct, est_pctm_pct)],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=11, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Hombres", y=estados_pct, x=est_pcth_pct,
+    orientation="h", marker_color=COLH,
+    text=[f"{p}% ({n:,})" for n, p in zip(est_h_pct, est_pcth_pct)],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=11, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=70, r=20, t=20, b=50),
+    width=400, height=900, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="%",
+               range=[0, 100], dtick=25,
+               tickfont=dict(family=FONT, size=13, color=MUTED),
+               title_font=dict(family=FONT, size=14, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=11, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+
+
+```{python}
+#| echo: false
+#| output: false
+
+# ---------- datos Morelos por nivel y sexo (2023) ----------
+mor = snii_2023[snii_2023["ESTADO"] == "MORELOS"]
+total_mor = len(mor)
+m_mor = int((mor["SEXO"] == "M").sum())
+h_mor = int((mor["SEXO"] == "H").sum())
+pct_m_mor = round(m_mor / total_mor * 100) if total_mor > 0 else 0
+pct_h_mor = round(h_mor / total_mor * 100) if total_mor > 0 else 0
+
+mor_nivel = {}
+for niv in ["C", "1", "2", "3"]:
+    sub = mor[mor["NIVEL"] == niv]
+    t = len(sub)
+    m = int((sub["SEXO"] == "M").sum())
+    h = int((sub["SEXO"] == "H").sum())
+    mor_nivel[niv] = {
+        "total": t, "m": m, "h": h,
+        "pct_m": round(m / t * 100) if t > 0 else 0,
+        "pct_h": round(h / t * 100) if t > 0 else 0,
+    }
+
+mor_em = mor[mor["EMERITO"] == True]
+total_mor_em = len(mor_em)
+m_mor_em = int((mor_em["SEXO"] == "M").sum()) if total_mor_em > 0 else 0
+h_mor_em = int((mor_em["SEXO"] == "H").sum()) if total_mor_em > 0 else 0
+pct_m_mor_em = round(m_mor_em / total_mor_em * 100) if total_mor_em > 0 else 0
+pct_h_mor_em = round(h_mor_em / total_mor_em * 100) if total_mor_em > 0 else 0
+```
+
+:::{.cr-section}
+
+Analicemos **Morelos**, el estado con mayor porcentaje de [mujeres]{style="color:#a78bfa"} en el SNII: **`{python} pct_m_mor`%** ([`{python} m_mor`]{style="color:#a78bfa"} de `{python} total_mor`). @cr-mor-c
+
+En **Candidatura**, [**`{python} mor_nivel["C"]["pct_m"]`%** son mujeres]{style="color:#a78bfa"} y [**`{python} mor_nivel["C"]["pct_h"]`%** son hombres]{style="color:#34d399"}. @cr-mor-c
+
+En **Nivel 1**, [**`{python} mor_nivel["1"]["pct_m"]`%** son mujeres]{style="color:#a78bfa"} y [**`{python} mor_nivel["1"]["pct_h"]`%** son hombres]{style="color:#34d399"}. @cr-mor-1
+
+En **Nivel 2**, [**`{python} mor_nivel["2"]["pct_m"]`%** son mujeres]{style="color:#a78bfa"} y [**`{python} mor_nivel["2"]["pct_h"]`%** son hombres]{style="color:#34d399"}. @cr-mor-2
+
+En **Nivel 3**, [**`{python} mor_nivel["3"]["pct_m"]`%** son mujeres]{style="color:#a78bfa"} y [**`{python} mor_nivel["3"]["pct_h"]`%** son hombres]{style="color:#34d399"}. @cr-mor-3
+
+Y del **Emeritazgo** en Morelos: [**`{python} m_mor_em`** mujeres]{style="color:#a78bfa"} (**`{python} pct_m_mor_em`%**) y [**`{python} h_mor_em`** hombres]{style="color:#34d399"} (**`{python} pct_h_mor_em`%**). @cr-mor-em
+
+:::{#cr-mor-c}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Candidatura"], y=[mor_nivel["C"]["h"]],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{mor_nivel['C']['h']:,} ({mor_nivel['C']['pct_h']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Candidatura"], y=[mor_nivel["C"]["m"]],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{mor_nivel['C']['m']:,} ({mor_nivel['C']['pct_m']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::{#cr-mor-1}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Nivel 1"], y=[mor_nivel["1"]["h"]],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{mor_nivel['1']['h']:,} ({mor_nivel['1']['pct_h']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Nivel 1"], y=[mor_nivel["1"]["m"]],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{mor_nivel['1']['m']:,} ({mor_nivel['1']['pct_m']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::{#cr-mor-2}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Nivel 2"], y=[mor_nivel["2"]["h"]],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{mor_nivel['2']['h']:,} ({mor_nivel['2']['pct_h']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Nivel 2"], y=[mor_nivel["2"]["m"]],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{mor_nivel['2']['m']:,} ({mor_nivel['2']['pct_m']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::{#cr-mor-3}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Nivel 3"], y=[mor_nivel["3"]["h"]],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{mor_nivel['3']['h']:,} ({mor_nivel['3']['pct_h']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Nivel 3"], y=[mor_nivel["3"]["m"]],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{mor_nivel['3']['m']:,} ({mor_nivel['3']['pct_m']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::{#cr-mor-em}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Emeritazgo"], y=[h_mor_em],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{h_mor_em:,} ({pct_h_mor_em}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Emeritazgo"], y=[m_mor_em],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{m_mor_em:,} ({pct_m_mor_em}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::
+
+
+```{python}
+#| echo: false
+#| output: false
+
+# ---------- datos Campeche por nivel y sexo (2023) ----------
+camp = snii_2023[snii_2023["ESTADO"] == "CAMPECHE"]
+total_camp = len(camp)
+m_camp = int((camp["SEXO"] == "M").sum())
+h_camp = int((camp["SEXO"] == "H").sum())
+pct_m_camp = round(m_camp / total_camp * 100) if total_camp > 0 else 0
+pct_h_camp = round(h_camp / total_camp * 100) if total_camp > 0 else 0
+
+camp_nivel = {}
+for niv in ["C", "1", "2", "3"]:
+    sub = camp[camp["NIVEL"] == niv]
+    t = len(sub)
+    m = int((sub["SEXO"] == "M").sum())
+    h = int((sub["SEXO"] == "H").sum())
+    camp_nivel[niv] = {
+        "total": t, "m": m, "h": h,
+        "pct_m": round(m / t * 100) if t > 0 else 0,
+        "pct_h": round(h / t * 100) if t > 0 else 0,
+    }
+
+camp_em = camp[camp["EMERITO"] == True]
+total_camp_em = len(camp_em)
+m_camp_em = int((camp_em["SEXO"] == "M").sum()) if total_camp_em > 0 else 0
+h_camp_em = int((camp_em["SEXO"] == "H").sum()) if total_camp_em > 0 else 0
+pct_m_camp_em = round(m_camp_em / total_camp_em * 100) if total_camp_em > 0 else 0
+pct_h_camp_em = round(h_camp_em / total_camp_em * 100) if total_camp_em > 0 else 0
+```
+
+:::{.cr-section}
+
+En el otro extremo está **Campeche**, el estado con menor porcentaje de [mujeres]{style="color:#a78bfa"} en el SNII: **`{python} pct_m_camp`%** ([`{python} m_camp`]{style="color:#a78bfa"} de `{python} total_camp`). @cr-camp-c
+
+En **Candidatura**, [**`{python} camp_nivel["C"]["pct_m"]`%** son mujeres]{style="color:#a78bfa"} y [**`{python} camp_nivel["C"]["pct_h"]`%** son hombres]{style="color:#34d399"}. @cr-camp-c
+
+En **Nivel 1**, [**`{python} camp_nivel["1"]["pct_m"]`%** son mujeres]{style="color:#a78bfa"} y [**`{python} camp_nivel["1"]["pct_h"]`%** son hombres]{style="color:#34d399"}. @cr-camp-1
+
+En **Nivel 2**, [**`{python} camp_nivel["2"]["pct_m"]`%** son mujeres]{style="color:#a78bfa"} y [**`{python} camp_nivel["2"]["pct_h"]`%** son hombres]{style="color:#34d399"}. @cr-camp-2
+
+En **Nivel 3**, [**`{python} camp_nivel["3"]["pct_m"]`%** son mujeres]{style="color:#a78bfa"} y [**`{python} camp_nivel["3"]["pct_h"]`%** son hombres]{style="color:#34d399"}. @cr-camp-3
+
+Y del **Emeritazgo** en Campeche: [**`{python} m_camp_em`** mujeres]{style="color:#a78bfa"} (**`{python} pct_m_camp_em`%**) y [**`{python} h_camp_em`** hombres]{style="color:#34d399"} (**`{python} pct_h_camp_em`%**). @cr-camp-em
+
+:::{#cr-camp-c}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Candidatura"], y=[camp_nivel["C"]["h"]],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{camp_nivel['C']['h']:,} ({camp_nivel['C']['pct_h']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Candidatura"], y=[camp_nivel["C"]["m"]],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{camp_nivel['C']['m']:,} ({camp_nivel['C']['pct_m']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::{#cr-camp-1}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Nivel 1"], y=[camp_nivel["1"]["h"]],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{camp_nivel['1']['h']:,} ({camp_nivel['1']['pct_h']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Nivel 1"], y=[camp_nivel["1"]["m"]],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{camp_nivel['1']['m']:,} ({camp_nivel['1']['pct_m']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::{#cr-camp-2}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Nivel 2"], y=[camp_nivel["2"]["h"]],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{camp_nivel['2']['h']:,} ({camp_nivel['2']['pct_h']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Nivel 2"], y=[camp_nivel["2"]["m"]],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{camp_nivel['2']['m']:,} ({camp_nivel['2']['pct_m']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::{#cr-camp-3}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Nivel 3"], y=[camp_nivel["3"]["h"]],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{camp_nivel['3']['h']:,} ({camp_nivel['3']['pct_h']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Nivel 3"], y=[camp_nivel["3"]["m"]],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{camp_nivel['3']['m']:,} ({camp_nivel['3']['pct_m']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::{#cr-camp-em}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Emeritazgo"], y=[h_camp_em],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{h_camp_em:,} ({pct_h_camp_em}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Emeritazgo"], y=[m_camp_em],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{m_camp_em:,} ({pct_m_camp_em}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::
+
+Ahora ordenamos por número total de [mujeres]{style="color:#a78bfa"} investigadoras.
+
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Mujeres", y=estados_num, x=est_pctm_num,
+    orientation="h", marker_color=COLM,
+    text=[f"{n:,} ({p}%)" for n, p in zip(est_m_num, est_pctm_num)],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=11, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Hombres", y=estados_num, x=est_pcth_num,
+    orientation="h", marker_color=COLH,
+    text=[f"{n:,} ({p}%)" for n, p in zip(est_h_num, est_pcth_num)],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=11, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=70, r=20, t=20, b=50),
+    width=400, height=900, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="%",
+               range=[0, 100], dtick=25,
+               tickfont=dict(family=FONT, size=13, color=MUTED),
+               title_font=dict(family=FONT, size=14, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=11, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+
+```{python}
+#| echo: false
+#| output: false
+
+# ---------- datos Ciudad de México por nivel y sexo (2023) ----------
+cdmx = snii_2023[snii_2023["ESTADO"] == "CIUDAD DE MÉXICO"]
+total_cdmx = len(cdmx)
+m_cdmx = int((cdmx["SEXO"] == "M").sum())
+h_cdmx = int((cdmx["SEXO"] == "H").sum())
+pct_m_cdmx = round(m_cdmx / total_cdmx * 100) if total_cdmx > 0 else 0
+pct_h_cdmx = round(h_cdmx / total_cdmx * 100) if total_cdmx > 0 else 0
+
+cdmx_nivel = {}
+for niv in ["C", "1", "2", "3"]:
+    sub = cdmx[cdmx["NIVEL"] == niv]
+    t = len(sub)
+    m = int((sub["SEXO"] == "M").sum())
+    h = int((sub["SEXO"] == "H").sum())
+    cdmx_nivel[niv] = {
+        "total": t, "m": m, "h": h,
+        "pct_m": round(m / t * 100) if t > 0 else 0,
+        "pct_h": round(h / t * 100) if t > 0 else 0,
+    }
+
+cdmx_em = cdmx[cdmx["EMERITO"] == True]
+total_cdmx_em = len(cdmx_em)
+m_cdmx_em = int((cdmx_em["SEXO"] == "M").sum()) if total_cdmx_em > 0 else 0
+h_cdmx_em = int((cdmx_em["SEXO"] == "H").sum()) if total_cdmx_em > 0 else 0
+pct_m_cdmx_em = round(m_cdmx_em / total_cdmx_em * 100) if total_cdmx_em > 0 else 0
+pct_h_cdmx_em = round(h_cdmx_em / total_cdmx_em * 100) if total_cdmx_em > 0 else 0
+```
+
+:::{.cr-section}
+
+Analicemos la **Ciudad de México**, el estado con mayor número de [mujeres]{style="color:#a78bfa"} en el SNII: **`{python} f"{m_cdmx:,}"`** ([`{python} pct_m_cdmx`%]{style="color:#a78bfa"} de `{python} f"{total_cdmx:,}"`). @cr-cdmx-c
+
+En **Candidatura**, [**`{python} cdmx_nivel["C"]["pct_m"]`%** son mujeres]{style="color:#a78bfa"} y [**`{python} cdmx_nivel["C"]["pct_h"]`%** son hombres]{style="color:#34d399"}. @cr-cdmx-c
+
+En **Nivel 1**, [**`{python} cdmx_nivel["1"]["pct_m"]`%** son mujeres]{style="color:#a78bfa"} y [**`{python} cdmx_nivel["1"]["pct_h"]`%** son hombres]{style="color:#34d399"}. @cr-cdmx-1
+
+En **Nivel 2**, [**`{python} cdmx_nivel["2"]["pct_m"]`%** son mujeres]{style="color:#a78bfa"} y [**`{python} cdmx_nivel["2"]["pct_h"]`%** son hombres]{style="color:#34d399"}. @cr-cdmx-2
+
+En **Nivel 3**, [**`{python} cdmx_nivel["3"]["pct_m"]`%** son mujeres]{style="color:#a78bfa"} y [**`{python} cdmx_nivel["3"]["pct_h"]`%** son hombres]{style="color:#34d399"}. @cr-cdmx-3
+
+Y del **Emeritazgo** en CDMX: [**`{python} m_cdmx_em`** mujeres]{style="color:#a78bfa"} (**`{python} pct_m_cdmx_em`%**) y [**`{python} h_cdmx_em`** hombres]{style="color:#34d399"} (**`{python} pct_h_cdmx_em`%**). @cr-cdmx-em
+
+:::{#cr-cdmx-c}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Candidatura"], y=[cdmx_nivel["C"]["h"]],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{cdmx_nivel['C']['h']:,} ({cdmx_nivel['C']['pct_h']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Candidatura"], y=[cdmx_nivel["C"]["m"]],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{cdmx_nivel['C']['m']:,} ({cdmx_nivel['C']['pct_m']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::{#cr-cdmx-1}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Nivel 1"], y=[cdmx_nivel["1"]["h"]],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{cdmx_nivel['1']['h']:,} ({cdmx_nivel['1']['pct_h']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Nivel 1"], y=[cdmx_nivel["1"]["m"]],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{cdmx_nivel['1']['m']:,} ({cdmx_nivel['1']['pct_m']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::{#cr-cdmx-2}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Nivel 2"], y=[cdmx_nivel["2"]["h"]],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{cdmx_nivel['2']['h']:,} ({cdmx_nivel['2']['pct_h']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Nivel 2"], y=[cdmx_nivel["2"]["m"]],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{cdmx_nivel['2']['m']:,} ({cdmx_nivel['2']['pct_m']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::{#cr-cdmx-3}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Nivel 3"], y=[cdmx_nivel["3"]["h"]],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{cdmx_nivel['3']['h']:,} ({cdmx_nivel['3']['pct_h']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Nivel 3"], y=[cdmx_nivel["3"]["m"]],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{cdmx_nivel['3']['m']:,} ({cdmx_nivel['3']['pct_m']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::{#cr-cdmx-em}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Emeritazgo"], y=[h_cdmx_em],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{h_cdmx_em:,} ({pct_h_cdmx_em}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Emeritazgo"], y=[m_cdmx_em],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{m_cdmx_em:,} ({pct_m_cdmx_em}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::
+
+```{python}
+#| echo: false
+#| output: false
+
+# ---------- datos Quintana Roo por nivel y sexo (2023) ----------
+qroo = snii_2023[snii_2023["ESTADO"] == "QUINTANA ROO"]
+total_qroo = len(qroo)
+m_qroo = int((qroo["SEXO"] == "M").sum())
+h_qroo = int((qroo["SEXO"] == "H").sum())
+pct_m_qroo = round(m_qroo / total_qroo * 100) if total_qroo > 0 else 0
+pct_h_qroo = round(h_qroo / total_qroo * 100) if total_qroo > 0 else 0
+
+qroo_nivel = {}
+for niv in ["C", "1", "2", "3"]:
+    sub = qroo[qroo["NIVEL"] == niv]
+    t = len(sub)
+    m = int((sub["SEXO"] == "M").sum())
+    h = int((sub["SEXO"] == "H").sum())
+    qroo_nivel[niv] = {
+        "total": t, "m": m, "h": h,
+        "pct_m": round(m / t * 100) if t > 0 else 0,
+        "pct_h": round(h / t * 100) if t > 0 else 0,
+    }
+
+qroo_em = qroo[qroo["EMERITO"] == True]
+total_qroo_em = len(qroo_em)
+m_qroo_em = int((qroo_em["SEXO"] == "M").sum()) if total_qroo_em > 0 else 0
+h_qroo_em = int((qroo_em["SEXO"] == "H").sum()) if total_qroo_em > 0 else 0
+pct_m_qroo_em = round(m_qroo_em / total_qroo_em * 100) if total_qroo_em > 0 else 0
+pct_h_qroo_em = round(h_qroo_em / total_qroo_em * 100) if total_qroo_em > 0 else 0
+```
+
+:::{.cr-section}
+
+Analicemos **Quintana Roo**, el estado con menor número de [mujeres]{style="color:#a78bfa"} en el SNII: **`{python} m_qroo`** ([`{python} pct_m_qroo`%]{style="color:#a78bfa"} de `{python} total_qroo`). @cr-qroo-c
+
+En **Candidatura**, [**`{python} qroo_nivel["C"]["pct_m"]`%** son mujeres]{style="color:#a78bfa"} y [**`{python} qroo_nivel["C"]["pct_h"]`%** son hombres]{style="color:#34d399"}. @cr-qroo-c
+
+En **Nivel 1**, [**`{python} qroo_nivel["1"]["pct_m"]`%** son mujeres]{style="color:#a78bfa"} y [**`{python} qroo_nivel["1"]["pct_h"]`%** son hombres]{style="color:#34d399"}. @cr-qroo-1
+
+En **Nivel 2**, [**`{python} qroo_nivel["2"]["pct_m"]`%** son mujeres]{style="color:#a78bfa"} y [**`{python} qroo_nivel["2"]["pct_h"]`%** son hombres]{style="color:#34d399"}. @cr-qroo-2
+
+En **Nivel 3**, [**`{python} qroo_nivel["3"]["pct_m"]`%** son mujeres]{style="color:#a78bfa"} y [**`{python} qroo_nivel["3"]["pct_h"]`%** son hombres]{style="color:#34d399"}. @cr-qroo-3
+
+Y del **Emeritazgo** en Quintana Roo: [**`{python} m_qroo_em`** mujeres]{style="color:#a78bfa"} (**`{python} pct_m_qroo_em`%**) y [**`{python} h_qroo_em`** hombres]{style="color:#34d399"} (**`{python} pct_h_qroo_em`%**). @cr-qroo-em
+
+:::{#cr-qroo-c}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Candidatura"], y=[qroo_nivel["C"]["h"]],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{qroo_nivel['C']['h']:,} ({qroo_nivel['C']['pct_h']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Candidatura"], y=[qroo_nivel["C"]["m"]],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{qroo_nivel['C']['m']:,} ({qroo_nivel['C']['pct_m']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::{#cr-qroo-1}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Nivel 1"], y=[qroo_nivel["1"]["h"]],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{qroo_nivel['1']['h']:,} ({qroo_nivel['1']['pct_h']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Nivel 1"], y=[qroo_nivel["1"]["m"]],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{qroo_nivel['1']['m']:,} ({qroo_nivel['1']['pct_m']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::{#cr-qroo-2}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Nivel 2"], y=[qroo_nivel["2"]["h"]],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{qroo_nivel['2']['h']:,} ({qroo_nivel['2']['pct_h']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Nivel 2"], y=[qroo_nivel["2"]["m"]],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{qroo_nivel['2']['m']:,} ({qroo_nivel['2']['pct_m']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::{#cr-qroo-3}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Nivel 3"], y=[qroo_nivel["3"]["h"]],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{qroo_nivel['3']['h']:,} ({qroo_nivel['3']['pct_h']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Nivel 3"], y=[qroo_nivel["3"]["m"]],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{qroo_nivel['3']['m']:,} ({qroo_nivel['3']['pct_m']}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+:::{#cr-qroo-em}
+```{python}
+#| echo: false
+fig = go.Figure()
+fig.add_trace(go.Bar(
+    name="Hombres", x=["Emeritazgo"], y=[h_qroo_em],
+    marker_color=COLH,
+    text=[f"<b>Hombres</b><br>{h_qroo_em:,} ({pct_h_qroo_em}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.add_trace(go.Bar(
+    name="Mujeres", x=["Emeritazgo"], y=[m_qroo_em],
+    marker_color=COLM,
+    text=[f"<b>Mujeres</b><br>{m_qroo_em:,} ({pct_m_qroo_em}%)"],
+    textposition="inside", insidetextanchor="middle",
+    textfont=dict(family=FONT, size=16, color="#f8fafc"),
+))
+fig.update_layout(
+    barmode="stack",
+    paper_bgcolor=BG, plot_bgcolor=BG,
+    font=dict(family=FONT, size=14, color=TEXT),
+    margin=dict(l=60, r=20, t=60, b=50),
+    width=400, showlegend=False,
+    xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="", rangemode="tozero",
+               tickformat=",", separatethousands=True,
+               tickfont=dict(family=FONT, size=13, color=MUTED)),
+    hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                    font_color=TEXT, bordercolor=GRID),
+)
+fig.show(config=SHOW)
+```
+:::
+
+
+
+
+:::
+
+
+
+
+:::{.cr-section}
+
+
+Estos análisis nos permiten identificar dónde las brechas de género son mayores y dónde son menores, para reflexionar sobre lo que se ha hecho — y lo que se ha dejado de hacer — en cada nivel y en cada estado.   @cr-niveles-comparacion
+
+
+
+:::{#cr-niveles-comparacion}
+```{python}
+#| echo: false
+
+x_labels = ["Nacional", "CDMX", "Campeche"]
+
+niveles_cierre = {
+    "C": {
+        "pct": [nivel_sexo["C"]["pct_m"], cdmx_nivel["C"]["pct_m"], camp_nivel["C"]["pct_m"]],
+        "n":   [nivel_sexo["C"]["m"],     cdmx_nivel["C"]["m"],     camp_nivel["C"]["m"]],
+        "color": "#f472b6",
+    },
+    "1": {
+        "pct": [nivel_sexo["1"]["pct_m"], cdmx_nivel["1"]["pct_m"], camp_nivel["1"]["pct_m"]],
+        "n":   [nivel_sexo["1"]["m"],     cdmx_nivel["1"]["m"],     camp_nivel["1"]["m"]],
+        "color": "#a78bfa",
+    },
+    "2": {
+        "pct": [nivel_sexo["2"]["pct_m"], cdmx_nivel["2"]["pct_m"], camp_nivel["2"]["pct_m"]],
+        "n":   [nivel_sexo["2"]["m"],     cdmx_nivel["2"]["m"],     camp_nivel["2"]["m"]],
+        "color": "#38bdf8",
+    },
+    "3": {
+        "pct": [nivel_sexo["3"]["pct_m"], cdmx_nivel["3"]["pct_m"], camp_nivel["3"]["pct_m"]],
+        "n":   [nivel_sexo["3"]["m"],     cdmx_nivel["3"]["m"],     camp_nivel["3"]["m"]],
+        "color": "#34d399",
+    },
+    "E": {
+        "pct": [pct_m_em, pct_m_cdmx_em, pct_m_camp_em],
+        "n":   [m_em,     m_cdmx_em,     m_camp_em],
+        "color": "#fbbf24",
+    },
+}
+
+nivel_names = {"C": "Candidatura", "1": "Nivel 1", "2": "Nivel 2", "3": "Nivel 3", "E": "Emeritazgo"}
+
+orden = ["C", "1", "2", "3", "E"]
+
+for niv in orden:
+    d = niveles_cierre[niv]
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=x_labels, y=d["pct"], mode="lines+markers+text",
+        showlegend=False,
+        line=dict(color=d["color"], width=3),
+        marker=dict(size=10, color=d["color"]),
+        text=[f"{p}% ({n:,})" for p, n in zip(d["pct"], d["n"])],
+        textposition=["top right", "top center", "top center"],
+        textfont=dict(family=FONT, size=12, color=d["color"]),
+    ))
+    fig.update_layout(
+        title=dict(text=nivel_names[niv],
+                   font=dict(family=TITLE_FONT, size=16, color=TEXT)),
+        paper_bgcolor=BG, plot_bgcolor=BG,
+        font=dict(family=FONT, size=14, color=TEXT),
+        margin=dict(l=50, r=30, t=50, b=40),
+        width=500, height=250, showlegend=False,
+        xaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+                   tickfont=dict(family=FONT, size=13, color=MUTED)),
+        yaxis=dict(gridcolor=GRID, zerolinecolor=GRID, title="",
+                   range=[0, 65], dtick=20, ticksuffix="%",
+                   tickfont=dict(family=FONT, size=11, color=MUTED)),
+        hoverlabel=dict(bgcolor=CARD, font_size=14, font_family=FONT,
+                        font_color=TEXT, bordercolor=GRID),
+    )
+    fig.show(config=SHOW)
+```
+::::
+
+
+Mensaje final ...
+
+::::
+
+
+
+
+
+:::{.cr-section}
+
+Este trabajo fue realizado por: @cr-nicte
+
+**Nicté Yasmín Luna Medina** — Comunicadora de la ciencia en el Instituto de Energías Renovables de la UNAM. Maestra en Filosofía de la Ciencia con especialidad en Comunicación de la Ciencia. Promotora de las energías renovables, la sustentabilidad y la igualdad sustantiva. Madre y feminista en formación. @cr-nicte
+
+**Diana Fernández Duque** — Ingeniera en energías renovables con experiencia en exploración geotérmica y análisis de datos. Comunicadora de la ciencia con diplomado con mención honorífica en divulgación científica. Actualmente cursa la maestría en ingeniería de datos. @cr-diana
+
+**Guillermo Barrios del Valle** — Le gusta leer la documentación de Python, procrastinar con visualizaciones y tomar mucho café. @cr-guillermo
+
+:::{#cr-nicte}
+![](autores/Nicte.png){width="300"}
+:::
+
+:::{#cr-diana}
+![](autores/Diana.png){width="300"}
+:::
+
+:::{#cr-guillermo}
+![](autores/Guillermo.png){width="300"}
+:::
+
+:::

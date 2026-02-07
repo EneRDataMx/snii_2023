@@ -1,0 +1,31 @@
+/* ---------- fondo oscuro global ---------- */
+body, html {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+.cr-section {
+  background-color: #0f172a;
+}
+
+/* narrativa (trigger text) */
+.cr-sidebar p,
+.cr-sidebar h1,
+.cr-sidebar h2,
+.cr-sidebar h3 {
+  color: #e2e8f0;
+}
+
+/* hero / big-number sticky blocks */
+.sticky-col-stack h1 {
+  color: #f8fafc;
+}
+.sticky-col-stack p,
+.sticky-col-stack em {
+  color: #94a3b8;
+}
+
+/* título y subtítulo de la página */
+.title, .subtitle {
+  color: #f8fafc !important;
+}

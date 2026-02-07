@@ -8,3 +8,6 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Large files (>100 MB)
+data/002_intermediate/snii_all.csv

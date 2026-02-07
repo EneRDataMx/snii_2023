@@ -1528,6 +1528,11 @@ for niv in orden:
 
 Mensaje final ...
 
+
+
+**Nota:** El análisis no incluye el año 2025. A partir de ese año, el SECIHTI dejó de reportar el título (Dr. / Dra.) en los listados de investigadores vigentes, por lo que ya no es posible inferir el sexo de las personas investigadoras con la metodología utilizada en años anteriores.
+
+
 ::::
 
 
